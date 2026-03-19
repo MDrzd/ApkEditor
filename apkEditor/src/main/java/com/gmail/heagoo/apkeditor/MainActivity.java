@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,25 +61,27 @@ public class MainActivity extends AppCompatActivity implements
     private ActionBarDrawerToggle mDrawerToggle;
     private int WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 1;
 
+    // ===== Tambahan untuk akses storage =====
+    private static final int REQUEST_READ_EXTERNAL = 1001;
+
     public static native int isX86();
     public static native void it(Object ctx, String pkgName, String dataDir, String apkPath);
     public static native void mg(String res, String orig,
                                  String replaces, int len2, String mapping, int len1);
     public static native void md(String target, String source, String added,
                                  int len1, String removed, int len2, String replaced, int len3);
-    public static native int vc(Object ctx, int seed);
+                                  public static native int vc(Object ctx, int seed);
 
-    public static boolean isEmulator() {
-        return Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.startsWith("unknown")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("Android SDK built for x86")
-                || Build.MANUFACTURER.contains("Genymotion")
-                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
-                || "google_sdk".equals(Build.PRODUCT);
-    }
-
+   public static boolean isEmulator() {
+    return Build.FINGERPRINT.startsWith("generic") ||
+           Build.FINGERPRINT.startsWith("unknown") ||
+           Build.MODEL.contains("google_sdk") ||
+           Build.MODEL.contains("Emulator") ||
+           Build.MODEL.contains("Android SDK built for x86") ||
+           Build.MANUFACTURER.contains("Genymotion") ||
+           (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic")) ||
+           "google_sdk".equals(Build.PRODUCT);
+}
     public static boolean upgradedFromOldVersion(Context ctx) {
         return true;
     }
@@ -125,6 +128,46 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             initFileWithPermissionCheck();
         }
+
+        // ===== Tambahan: request READ_EXTERNAL_STORAGE =====
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL);
+            } else {
+                aksesStorageLangsung();
+            }
+        } else {
+            aksesStorageLangsung();
+        }
+    }
+
+    // ===== Tambahan method akses internal + SD card =====
+    private void aksesStorageLangsung() {
+        // akses internal storage
+        File internalStorage = new File("/storage/emulated/0/");
+        bacaFolder(internalStorage);
+
+        // cek SD card (jika ada)
+        File[] externalDirs = getExternalFilesDirs(null); // 0=internal, 1=SD card kalau ada
+        if (externalDirs.length > 1 && externalDirs[1] != null) {
+            // naik 4 level untuk dapat root SD card
+            File sdCard = externalDirs[1].getParentFile().getParentFile().getParentFile().getParentFile();
+            bacaFolder(sdCard);
+        }
+    }
+
+    private void bacaFolder(File folder) {
+        if (folder != null && folder.exists() && folder.isDirectory()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    // proses file/folder sesuai kebutuhan
+                    System.out.println("File/Folder: " + f.getAbsolutePath());
+                }
+            }
+        }
     }
 
     private void setupLanguage() {
@@ -161,12 +204,13 @@ public class MainActivity extends AppCompatActivity implements
         // pro version
         if (pkgName.charAt(pkgName.length() - 1) == 'o') {
             String installer = this.getPackageManager().getInstallerPackageName(pkgName);
-            if (installer == null || !installer.endsWith(".vending")) {
-                Toast.makeText(this, "Please Install it from Google Play!",
-                        Toast.LENGTH_LONG).show();
-            }
+           if (installer == null || !installer.endsWith(".vending")) {
+    Toast.makeText(this, "Please Install it from Google Play!",
+            Toast.LENGTH_LONG).show();
+}
         }
     }
+
 
     private void setupSlidingMenu() {
         // enabling action bar app icon and behaving it as toggle button
@@ -318,15 +362,24 @@ public class MainActivity extends AppCompatActivity implements
         this.finish();
     }
 
-    @Override
-    public void onRequestPermissionsResult(
-            int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+   @Override
+public void onRequestPermissionsResult(
+        int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+    // Untuk permission internal / file lama
+    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == WRITE_EXTERNAL_STORAGE_REQUEST_CODE) {
+            // Logic baru: akses storage
+            aksesStorageLangsung();
+        } else {
+            // Logic lama: init file
             initFile();
         }
+    } else {
+        Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
     }
+}
 
     public void initFileWithPermissionCheck() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
