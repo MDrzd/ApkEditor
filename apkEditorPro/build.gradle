@@ -7,8 +7,8 @@ android {
 
     defaultConfig {
         applicationId "com.gmail.heagoo.apkeditor.pro"
-        minSdk 14
-        targetSdk 26
+        minSdk 21
+        targetSdk 33
         multiDexEnabled true
     }
 

@@ -6,8 +6,8 @@ android {
     compileSdkVersion 33
 
     defaultConfig {
-        minSdk 12
-        targetSdk 23
+        minSdk 21
+        targetSdk 33
     }
 
     buildTypes {
