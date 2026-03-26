@@ -2829,8 +2829,15 @@ public class ApkInfoActivity extends CustomizedLangActivity
             return "json.xml";
         } else if (fileName.endsWith(".txt")) {
             return "txt.xml";
+            } else if (fileName.endsWith(".yaml")) {
+            return "yaml.xml";
+            } else if (fileName.endsWith(".yml")) {
+            return "yaml.xml";
+            } else if (fileName.endsWith(".ini")) {
+            return "ini.xml";
         } else if (fileName.endsWith(".js")) {
             return "js.xml";
+            
         }
         return null;
     }
