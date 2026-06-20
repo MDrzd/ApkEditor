@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <android.support.v7.widget.AppCompatButton
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btn_remove_bg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
                     android:textColor="#ffffffff"
                     app:backgroundTint="#ff606060" />
 
-                <android.support.v7.widget.AppCompatButton
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btn_replace_color"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
                     android:visibility="gone"
                     app:backgroundTint="#ff606060" />
 
-                <android.support.v7.widget.AppCompatButton
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btn_resize"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                     android:textColor="#ffffffff"
                     app:backgroundTint="#ff606060" />
 
-                <android.support.v7.widget.AppCompatButton
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btn_transparency"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -118,7 +118,7 @@
             </LinearLayout>
 
 
-            <android.support.v7.widget.AppCompatButton
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_remove_it"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -219,7 +219,7 @@
                     android:textColor="@color/white" />
             </LinearLayout>
 
-            <android.support.v7.widget.AppCompatButton
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_do_resize"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -262,7 +262,7 @@
             </LinearLayout>
 
 
-            <android.support.v7.widget.AppCompatButton
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_transparency_preview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
