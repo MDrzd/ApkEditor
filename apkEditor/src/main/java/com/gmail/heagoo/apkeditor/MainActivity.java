@@ -17,6 +17,8 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.provider.Settings;
+import android.net.Uri;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.AlertDialog;
 
 import com.gmail.heagoo.apkeditor.base.BuildConfig;
 import com.gmail.heagoo.apkeditor.base.R;
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // ===== Tambahan untuk akses storage =====
     private static final int REQUEST_READ_EXTERNAL = 1001;
+    private static final int REQUEST_MANAGE_STORAGE = 2001;
 
     public static native int isX86();
     public static native void it(Object ctx, String pkgName, String dataDir, String apkPath);
@@ -130,18 +134,26 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         // ===== Tambahan: request READ_EXTERNAL_STORAGE =====
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL);
-            } else {
-                aksesStorageLangsung();
-            }
-        } else {
-            aksesStorageLangsung();
-        }
+       requestManageStoragePermission();
+
+// Android 10 ke bawah
+if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+    if (ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                REQUEST_READ_EXTERNAL);
+
+    } else {
+        aksesStorageLangsung();
     }
+} 
+
+}
 
     // ===== Tambahan method akses internal + SD card =====
     private void aksesStorageLangsung() {
@@ -169,6 +181,37 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
     }
+    
+    private void requestManageStoragePermission() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (!Environment.isExternalStorageManager()) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Izin Penyimpanan")
+                    .setMessage("ApkEditor memerlukan izin Pengelolaan Semua File agar dapat mengakses APK dan folder penyimpanan.")
+                    .setCancelable(false)
+                    .setPositiveButton("Izinkan", (dialog, which) -> {
+                        try {
+                            Intent intent = new Intent(
+                                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                                    Uri.parse("package:" + getPackageName()));
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            Intent intent = new Intent(
+                                    Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                            startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton("Batal", null)
+                    .show();
+
+        } else {
+            aksesStorageLangsung();
+        }
+    } else {
+        aksesStorageLangsung();
+    }
+}
 
     private void setupLanguage() {
         String languageToLoad =
@@ -187,12 +230,20 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void onResume() {
-        if (!BuildConfig.IS_PRO) {
-            prompter.showMessageDialog();
+    @Override
+public void onResume() {
+    super.onResume();
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        if (Environment.isExternalStorageManager()) {
+            aksesStorageLangsung();
         }
-        super.onResume();
     }
+
+    if (!BuildConfig.IS_PRO && prompter != null) {
+        prompter.showMessageDialog();
+    }
+}
 
     @Override
     public void onDestroy() {
